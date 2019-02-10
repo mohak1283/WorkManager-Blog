@@ -1,0 +1,292 @@
+<html lang=en>
+
+
+
+<p><strong>Table of Contents:</strong></p>
+
+<ol>            
+<li><a href='#introduction'>Introduction</a></li>
+<li><a href='#what-is-workmanager'>What is a WorkManager?</a></li>
+<li><a href='#when-you-should-use-it'>When you should use it?</a></li>
+<li><a href='#when-you-should-not-use-it'>When you should not use it?</a></li>
+<li><a href='#basicsOfWorkManager'>Basic Components of WorkManager</a></li>
+
+<li>
+An Example:
+<br>
+<ol>
+
+<li><a href='#NotiApp'>Notification App</a></li>
+<li><a href='#dependencies'>Dependencies</a></li>
+<li><a href='#ActivityLayout'>Designing Activity Layout</a></li>
+<li><a href='#utilsClass'>Create Utils Class</a></li>
+<li><a href='#workerClass'>Creating Worker Class</a></li>
+<li><a href='#setUpMainActivity'>Setting Up MainActivity</a></li>
+<li><a href='#oneTimeWorkRequest'>OneTimeWorkRequest</a></li>
+<li><a href='#periodicWorkRequest'>PeriodicWorkRequest</a></li>
+
+</ol>
+</ol>
+</li>
+</ul>
+<br>
+<br><br>
+
+
+<h3 id='introduction'>Introduction</h3>
+<br>
+In this blog I'm going to show you how to work with WorkManager in Android<br><br><br>
+
+
+<h3 id='what-is-workmanager'>What is a WorkManager?</h3>
+<br>
+WorkManager library is a part of Android JetPack and Architecture Components. It is used to run deferrable background task (work). Basically, it is meant for tasks that requires guaranteed execution even if the app is in background. You can also specify some constraints a device needs to fulfill before the work can run. For example, suppose there is a task that requires intensive battery usage, then that task can be run when the device is charging.
+<br><br><br>
+
+
+<h3 id='when-you-should-use-it'>When you should use it?</h3>
+<br>
+<ul>
+<li><b>When the task needs to be completed:</b><br><br>
+WorkManager library can be used when you want your task to be completed irrespective of whether you navigates away from the app or the screen.
+</li>
+<br><br>
+<li><b>Can the task be deferrable:</b><br><br>
+WorkManager library can be used when your task can be deferrable. Deferrable means that your task can be run later. In some cases, WorkManager may not run your tasks immediately because it works in a battery efficient way and it does not ignores the Android background restrictions.
+</li>
+</ul>
+<br><br><br>
+
+
+<h3 id='when-you-should-not-use-it'>When you should not use it?</h3>
+<br>
+<ul>
+<li><b>When the task needs to be executed at some exact time:</b><br><br>
+If you want the task to be exceuted at some specific time, then in that case, WorkManager library can't be used. For this specific case, consider using AlarmManager.
+</li>
+</ul>
+<br><br><br>
+
+
+
+<h3 id='basicsOfWorkManager'>Basic Components of WorkManager</h3>
+<br>
+There are four basic components of WorkManager you need to know:
+<br>
+<ul>
+<li><b>Worker:</b><br><br>
+Worker is an abstract class that performs work synchronously on a background thread provided by WorkManager. You will need to make a custom class and extends the Worker Class and override the doWork() method where actual background processing takes place.
+</li>
+<br><br>
+<li><b>WorkRequest:</b><br><br>
+WorkRequest is also an abstract class which specifies parameters or constraints for work that should be enqueued in WorkManager. There are two types of WorkRequest:<br><br>
+<ul>
+<li><b>OneTimeWorkRequest: </b><br>It is basically a WorkRequest for non-repeating task. For example, if you want your task to be exceuted only once, then you should use OneTimeWorkRequest.
+</li>
+<br><br>
+<li><b>PeriodicWorkRequest: </b><br>It is basically a WorkRequest for repeating task. First execution of the task happens immediately and the further executions happens during a interval specified.
+For example, if you want your task to be exceuted for multiple times, then you should use PeriodicWorkRequest.
+</li>
+</ul>
+<br><br>
+<li><b>WorkManager:</b><br><br>
+WorkManager class actually runs your WorkRequest based on the Constraints specified during building of WorkRequest.
+</li>
+<br><br>
+<li><b>WorkInfo:</b><br><br>
+WorkInfo class consists of information about the specific task. 
+</li>
+<br><br>
+</ul>
+<br><br><br>
+
+
+<h3 id='NotiApp'>Notification App</h3>
+<br>
+Now, Let's dive into the code. We will build the simple Notification App which contains two buttons. On Click of First Button, Notification will be displayed only once and On Click of Second Button, Notification will be displayed once every 24 hours.<br><br>
+<div style="display:flex">
+     <div style="flex:1;padding-right:5px;">
+          <img class="img-fluid text-center" src = "http://127.0.0.1:8000/media/blog/22/demo.png">
+     </div>
+     <div style="flex:4;padding-left:5px;">
+          <img class="img-fluid text-center" src = "http://127.0.0.1:8000/media/blog/22/demo.png" >
+     </div>
+</div>
+<br><br>
+
+Let's begin the coding!!!
+<br><br><br>
+
+
+<h3 id='dependencies'>Dependencies</h3>
+<br>
+Open build.gradle (Module:app) and add the following WorkManager dependency.
+<br><br>
+<script src="https://gist.github.com/mohak1283/7d715d835562cf4bb933656002a9d179.js"></script>
+<br>
+Make sure you have the latest version of dependencies. You can check the latest version <a href="https://developer.android.com/jetpack/androidx/releases/work" target = "_blank" rel = "nofollow">here</a>
+<br><br><br>
+
+
+<h3 id='ActivityLayout'>Designing MainActivity Layout</h3>
+<br>
+Add the following code in your activity_main.xml file. This layout contains two buttons. When the First Button is clicked then Notification will be displayed only once, and when Second Button is clicked, then Notification will be displayed once every 24 hours.<br><br>
+<script src="https://gist.github.com/mohak1283/acd1d707861c3738ad589e6490273cf0.js"></script>
+<br><br><br>
+
+
+<h3 id='utilsClass'>Create Utils Class</h3>
+<br>
+Make a utility class named Utils.java and put the following code inside it. This class contains the code for displaying the Notification to the user.<br><br>
+<script src="https://gist.github.com/mohak1283/0d9fad56be609c418b8ebd747fd6a8bd.js"></script>
+<br><br><br>
+
+
+<h3 id='workerClass'>Creating Worker Class</h3>
+<br>
+Now, We will create the Worker Class where we will call the method which will display the notification.
+<br><br> 
+<ul>
+<li><b>Extends Worker Class : </b>
+<br><br>
+The first step is to extends our custom class with Worker Class and override the default constructor.
+<br><br>
+</li>
+<li><b>Override doWork() method : </b>
+<br><br>
+The second step is to override the doWork() method where our actual background processing takes place. In this method
+we will call the sendNotification() static method of Utils class and pass the context as it's parameter. We will write the code
+inside try catch block to handle the exception if any.<br>
+In try block, call the sendNotification() method and return Result.success() method and in catch block,
+log the exception message and return Result.failure() method.<br>
+That's all for this class!. Now we will go to MainActivity
+<br><br>
+
+<script src="https://gist.github.com/mohak1283/7b7be08a3ca1e9dbc73e5d1ecc185227.js"></script>
+<br><br><br>
+
+
+<h3 id='setUpMainActivity'>Setting Up MainActivity</h3>
+<br>
+In this section, we will setup the basic code in MainActivity
+<br><br>
+<ul>
+<li><b>Declaring Objects : </b>
+<br><br>
+In this step, declare the WorkManager class object and AppCompatButton class objects above the onCreate() method.
+<br><br>
+<script src="https://gist.github.com/mohak1283/011a2ca483c131c98828c875f42c39dc.js"></script>
+</li>
+<li><b>Initializing Objects : </b>
+In this step, initialize the WorkManager class object which was declared in above step and 
+give the reference of those two buttons using findViewById method inside onCreate() method.
+<br><br>
+<script src="https://gist.github.com/mohak1283/66a9801bb264471b27f6e1de8aaec1c2.js"></script>
+</li>
+</ul>
+
+<br><br><br>
+
+
+<h3 id='oneTimeWorkRequest'>OneTimeWorkRequest</h3>
+<br>
+In this section, we will build the OneTimeWorkRequest with WorkManager.
+<br><br>
+<ul>
+<li><b>Setting Click Listener : </b>
+<br><br>
+In this step, set the OnClickListener on first button in the layout.
+<br><br>
+<script src="https://gist.github.com/mohak1283/277cdbff68e143ba227f033bccd36b98.js"></script>
+</li>
+<li><b>Specifying Constraints : </b>
+<br><br>
+In this step, build the Constraints object using Constraints.Builder() inside the onClick() method.<br>
+Constraints object is basically a set of conditions or a condition which needs to 
+be fulfilled before the WorkRequest can run. In this case, we are specifying two Constraints, First one 
+it does not requires charging to run the WorkRequest and the second one is, App needs to be connected 
+to any network in order to run the WorkRequest.
+<br><br>
+<script src="https://gist.github.com/mohak1283/e446b63e05791217a2194abdb71d3b14.js"></script>
+</li>
+<li><b>Building WorkRequest and enqueue it : </b>
+<br><br>
+In this step, build the OneTimeWorkRequest using OneTimeWorkRequest.Builder() function and pass the 
+NotiWorker class as it's parameter. After that, set the Constraints to it so that when all those constraints
+are fulfilled, then only it can run, and at last build it. Finally, enqueue this WorkRequest
+using enqueue() method of WorkManager class for background processing.
+<br><br>
+<script src="https://gist.github.com/mohak1283/d97b40276b1d017c6150516925eda3a4.js"></script>
+</li>
+<br>
+That's all you have created the OnTimeWorkRequest!!!
+</ul>
+<br><br><br>
+
+
+<h3 id='periodicWorkRequest'>PeriodicWorkRequest</h3>
+<br>
+In this section, we will build the PeriodicWorkRequest with WorkManager.
+<br><br>
+<ul>
+<li><b>Setting Click Listener : </b>
+<br><br>
+In this step, set the OnClickListener on second button in the layout.
+<br><br>
+<script src="https://gist.github.com/mohak1283/771964a1467d4b483dbbbfff7a304bfb.js"></script>
+</li>
+<li><b>Specifying Constraints : </b>
+<br><br>
+In this step, build the Constraints object using Constraints.Builder() inside the onClick() method.<br>
+Constraints object is basically a set of conditions or a condition which needs to 
+be fulfilled before the WorkRequest can run. In this case, we are specifying two Constraints, First one 
+it does not requires charging to run the WorkRequest and the second one is, App needs to be connected 
+to any network in order to run the WorkRequest.
+<br><br>
+<script src="https://gist.github.com/mohak1283/6b6b17e9d6a6b7f4a669a8ffefa66921.js"></script>
+</li>
+<li><b>Building WorkRequest and enqueue it : </b>
+<br><br>
+In this step, build the PeriodicWorkRequest using PeriodicWorkRequest.Builder() function 
+and pass the following parameters to it.<br><br>
+<ul>
+<li><b>Worker Class : </b>
+<br><br>
+Pass the Custom Worker class you have created (In this case, it is NotiWorker class) as it's first parameter.
+<br><br>
+</li>
+<li><b>repeatInterval : </b>
+<br><br>
+Pass the repeat Interval value as it's second parameter. In this case, we are passing 24.
+<br><br>
+</li>
+<li><b>repeatIntervalTimeUnit : </b>
+<br><br>
+Pass the TimeUnit for repeat interval. In this case, we are passing TimeUnit.HOURS, because we
+want the Notification to be displayed once every 24 hours.
+<br><br>
+</li>
+</ul>
+After passing the parameters to the Builder function, set the Constraints to it so that when all those constraints
+are fulfilled, then only it can run, and at last build it. Finally, enqueue this WorkRequest
+using enqueue() method of WorkManager class for background processing.
+<br><br>
+<script src="https://gist.github.com/mohak1283/7f8d4c8f0eb019133e360d15231758dc.js"></script>
+</li>
+<br>
+That's all you have created the PeriodicWorkRequest!!!
+</ul>
+<br><br><br>
+
+
+That's All! Happy Coding!
+<br><br><br>
+
+The complete code is available <a href="https://github.com/mohak1283/WorkManagerSample" target="_blank" rel="nofollow">here</a>.
+<br><br><br>
+
+
+
+
+
+</html>
